@@ -1,0 +1,22 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: backend/.venv/bin/ruff check --fix
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: ruff-format
+        name: ruff format
+        entry: backend/.venv/bin/ruff format
+        language: system
+        types: [python]
+        files: ^backend/
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd backend && .venv/bin/mypy aligned --strict'
+        language: system
+        types: [python]
+        pass_filenames: false
+        files: ^backend/
