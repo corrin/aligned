@@ -1,0 +1,7 @@
+version: "2"
+
+tunnels:
+  dev:
+    addr: 5173
+    proto: http
+    domain: aligned-lakeland.ngrok.io
