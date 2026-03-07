@@ -16,7 +16,7 @@ def verify_google_id_token(token: str, client_id: str) -> str:
     idinfo: dict[str, object] = id_token.verify_oauth2_token(
         token,
         google_requests.Request(),
-        client_id,  # type: ignore[no-untyped-call]
+        client_id,
     )
     email = idinfo.get("email")
     if not isinstance(email, str):
