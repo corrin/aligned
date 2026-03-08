@@ -7,6 +7,8 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = ">=0.100"
+# TODO: replace with fastrest = "*" once https://github.com/hoaxnerd/fastrest.git merges py.typed fixes
+fastrest = {git = "https://github.com/corrin/fastrest.git", branch = "main", extras = ["sqlalchemy", "mcp"]}
 uvicorn = {version = "*", extras = ["standard"]}
 sqlalchemy = {version = ">=2.0", extras = ["asyncio"]}
 aiomysql = "*"
@@ -22,8 +24,6 @@ msal = "*"
 google-api-python-client = "*"
 google-auth-oauthlib = "*"
 alembic = "*"
-# TODO: replace with fastrest = "*" once https://github.com/hoaxnerd/fastrest.git merges py.typed fixes
-fastrest = {git = "https://github.com/corrin/fastrest.git", branch = "main"}
 msgraph-sdk = "^1.55.0"
 
 [tool.poetry.group.dev.dependencies]
