@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.auth.dependencies import get_current_user, get_db_session
+from aligned.auth.jwt import JWTUser
 from aligned.models.user import User
-
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    from aligned.auth.jwt import JWTUser
 
 router = APIRouter(prefix="/api/settings", tags=["settings"])
 
 VALID_SLOT_DURATIONS = {30, 60, 120}
+
+DbSession = Annotated[AsyncSession, Depends(get_db_session)]
+CurrentUser = Annotated[JWTUser, Depends(get_current_user)]
 
 
 class SettingsResponse(BaseModel):
@@ -37,9 +37,9 @@ class SettingsUpdate(BaseModel):
 
 @router.get("", response_model=SettingsResponse)
 async def get_settings(
-    current_user: JWTUser = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session),
-) -> dict[str, Any]:
+    current_user: CurrentUser,
+    session: DbSession,
+) -> dict[str, str | int | None]:
     """Get the current user's settings."""
     result = await session.execute(select(User).where(User.id == current_user.id))
     user = result.scalar_one_or_none()
@@ -56,9 +56,9 @@ async def get_settings(
 @router.put("", response_model=SettingsResponse)
 async def update_settings(
     body: SettingsUpdate,
-    current_user: JWTUser = Depends(get_current_user),
-    session: AsyncSession = Depends(get_db_session),
-) -> dict[str, Any]:
+    current_user: CurrentUser,
+    session: DbSession,
+) -> dict[str, str | int | None]:
     """Update the current user's settings."""
     result = await session.execute(select(User).where(User.id == current_user.id))
     user = result.scalar_one_or_none()

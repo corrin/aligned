@@ -12,6 +12,7 @@ const authStore = useAuthStore()
         <div class="nav-left">
           <RouterLink to="/" class="brand">Aligned</RouterLink>
           <RouterLink to="/">Home</RouterLink>
+          <RouterLink to="/tasks">Tasks</RouterLink>
         </div>
         <div class="nav-right">
           <RouterLink to="/settings">Settings</RouterLink>

@@ -7,6 +7,17 @@ from collections.abc import Generator
 
 import pytest
 
+# Global Playwright timeout — no individual timeout should exceed this.
+E2E_TIMEOUT_MS = 5000
+
+
+@pytest.fixture
+def page(page: "pytest.Page") -> "pytest.Page":  # type: ignore[name-defined]
+    """Set global Playwright timeout on every page."""
+    page.set_default_timeout(E2E_TIMEOUT_MS)
+    page.set_default_navigation_timeout(E2E_TIMEOUT_MS)
+    return page
+
 
 @pytest.fixture(scope="session")
 def backend_server() -> Generator[str, None, None]:
@@ -63,5 +74,5 @@ def authenticated_page(
     page.evaluate(f"localStorage.setItem('token', '{token}')")
     # Reload so the Vue router picks up the token from localStorage
     page.reload()
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("domcontentloaded")
     return page

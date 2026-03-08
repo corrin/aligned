@@ -7,7 +7,6 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.12"
 fastapi = ">=0.100"
-fastrest = {version = "*", extras = ["sqlalchemy"]}
 uvicorn = {version = "*", extras = ["standard"]}
 sqlalchemy = {version = ">=2.0", extras = ["asyncio"]}
 aiomysql = "*"
@@ -23,6 +22,8 @@ msal = "*"
 google-api-python-client = "*"
 google-auth-oauthlib = "*"
 alembic = "*"
+fastrest = {path = "/home/corrin/src/fastrest", develop = true}
+msgraph-sdk = "^1.55.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
@@ -32,6 +33,7 @@ playwright = "*"
 mypy = "*"
 ruff = "*"
 pre-commit = "*"
+google-api-python-client-stubs = "^1.33.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -64,19 +66,6 @@ select = [
     "ANN",
     "RUF",
 ]
-
-[tool.ruff.lint.per-file-ignores]
-# Test code doesn't need type annotations — clarity over ceremony
-"tests/**" = ["ANN"]
-# Alembic auto-generates migration code without annotations
-"migrations/**" = ["ANN"]
-# FastAPI's Depends() is designed to be called in parameter defaults (B008 is a false positive)
-"aligned/routes/**" = ["B008"]
-"aligned/auth/dependencies.py" = ["B008"]
-# FastREST serializer Meta classes use mutable class attributes by design
-"aligned/serializers/**" = ["RUF012"]
-# FastREST viewset overrides use Any for compatibility with untyped base class kwargs
-"aligned/viewsets/**" = ["ANN401"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -2,25 +2,32 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from aligned.auth.jwt import JWTUser, verify_access_token
-from aligned.config import Settings, get_settings
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
+from aligned.config import Settings, get_settings
 
 _bearer_scheme = HTTPBearer()
 
+BearerCredentials = Annotated[HTTPAuthorizationCredentials, Depends(_bearer_scheme)]
+CurrentSettings = Annotated[Settings, Depends(get_settings)]
+
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(_bearer_scheme),
-    settings: Settings = Depends(get_settings),
+    credentials: BearerCredentials,
+    settings: CurrentSettings,
 ) -> JWTUser:
-    """Decode JWT from Authorization header and return a JWTUser."""
+    """Decode JWT from Authorization header and return a JWTUser.
+
+    Use as a FastAPI dependency: ``Depends(get_current_user)``.
+    For manual use inside a route, call ``get_current_user_from_request(request)`` instead.
+    """
     import uuid
 
     import jwt
@@ -37,8 +44,32 @@ async def get_current_user(
         ) from exc
 
 
-async def get_db_session(request: Request) -> AsyncSession:
-    """Get the DB session injected by middleware."""
+async def get_current_user_from_request(request: Request) -> JWTUser:
+    """Extract and verify JWT from a Request object (non-DI usage)."""
+    import uuid
 
+    import jwt
+
+    auth = request.headers.get("authorization", "")
+    if not auth.startswith("Bearer "):
+        from fastapi import HTTPException, status
+
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing bearer token")
+    token = auth[7:]
+    settings = getattr(request.app.state, "settings", None) or get_settings()
+    try:
+        payload = verify_access_token(token, settings.jwt_secret_key)
+        return JWTUser(id=uuid.UUID(payload["sub"]), email=payload["email"])
+    except (jwt.PyJWTError, KeyError, ValueError) as exc:
+        from fastapi import HTTPException, status
+
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token",
+        ) from exc
+
+
+def get_db_session(request: Request) -> AsyncSession:
+    """Get the DB session injected by middleware."""
     session: AsyncSession = request.state.db_session
     return session
