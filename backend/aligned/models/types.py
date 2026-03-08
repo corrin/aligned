@@ -7,10 +7,7 @@ from sqlalchemy.engine.interfaces import Dialect
 
 
 class MySQLUUID(TypeDecorator[uuid.UUID]):
-    """Stores UUID as BINARY(16) for MySQL compatibility.
-
-    Works transparently with SQLite (stores as bytes) and MySQL (BINARY(16)).
-    """
+    """Stores UUID as BINARY(16) for MySQL/MariaDB compatibility."""
 
     impl = BINARY(16)
     cache_ok = True

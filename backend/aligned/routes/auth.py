@@ -105,3 +105,40 @@ async def get_me(
 async def logout() -> dict[str, str]:
     """Logout is a no-op for stateless JWT — client discards the token."""
     return {"detail": "Logged out"}
+
+
+class TestLoginRequest(BaseModel):
+    email: str
+
+
+# Separate router — only included in the app when settings.testing is True
+test_router = APIRouter(prefix="/api/auth", tags=["auth-test"])
+
+
+@test_router.post("/test-login", response_model=GoogleLoginResponse)
+async def test_login(
+    body: TestLoginRequest,
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> dict[str, Any]:
+    """Bypass Google OAuth for E2E tests. This route only exists when TESTING=true."""
+    result = await session.execute(select(User).where(User.app_login == body.email))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(app_login=body.email)
+        user.id = uuid.uuid4()
+        session.add(user)
+        await session.flush()
+
+    token = create_access_token(user.id, user.app_login, settings.jwt_secret_key)
+    return {
+        "token": token,
+        "user": {
+            "id": str(user.id),
+            "email": user.app_login,
+            "llm_model": user.llm_model,
+            "ai_instructions": user.ai_instructions,
+            "schedule_slot_duration": user.schedule_slot_duration,
+        },
+    }

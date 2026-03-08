@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from aligned.auth.jwt import create_token_auth
 from aligned.config import Settings, get_settings
 from aligned.routes.auth import router as auth_router
+from aligned.routes.auth import test_router as auth_test_router
 from aligned.routes.settings import router as settings_router
 from aligned.viewsets.external_accounts import ExternalAccountViewSet
 
@@ -66,6 +67,10 @@ def create_app(
     # Plain FastAPI routes
     app.include_router(auth_router)
     app.include_router(settings_router)
+
+    # Test-only routes — completely absent in production
+    if settings.testing:
+        app.include_router(auth_test_router)
 
     # FastREST viewset routes
     rest_router = DefaultRouter()
