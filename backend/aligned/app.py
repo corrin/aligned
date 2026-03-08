@@ -25,7 +25,10 @@ async def _get_session_factory(settings: Settings) -> async_sessionmaker[AsyncSe
     return _session_factory
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(
+    settings: Settings | None = None,
+    session_factory: async_sessionmaker[AsyncSession] | None = None,
+) -> FastAPI:
     """Create and configure the FastAPI application."""
     if settings is None:
         settings = get_settings()
@@ -49,7 +52,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.middleware("http")
     async def db_session_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Inject an async DB session into request.state for routes and viewsets."""
-        factory = await _get_session_factory(settings)
+        factory = session_factory or await _get_session_factory(settings)
         async with factory() as session:
             request.state.db_session = session
             try:
