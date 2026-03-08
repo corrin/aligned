@@ -15,8 +15,10 @@
   "dependencies": {
     "axios": "^1.13.6",
     "pinia": "^3.0.4",
+    "sortablejs": "^1.15.7",
     "vue": "^3.5.29",
-    "vue-router": "^5.0.3"
+    "vue-router": "^5.0.3",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

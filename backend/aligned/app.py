@@ -13,7 +13,9 @@ from aligned.config import Settings, get_settings
 from aligned.routes.auth import router as auth_router
 from aligned.routes.auth import test_router as auth_test_router
 from aligned.routes.settings import router as settings_router
+from aligned.routes.todoist_auth import router as todoist_auth_router
 from aligned.viewsets.external_accounts import ExternalAccountViewSet
+from aligned.viewsets.tasks import TaskViewSet
 
 _session_factory: async_sessionmaker[AsyncSession] | None = None
 
@@ -39,6 +41,7 @@ def create_app(
         description="Intelligent task and calendar management",
         version="0.1.0",
     )
+    app.state.settings = settings
 
     # FastREST configuration: JWT auth + IsAuthenticated by default
     token_auth = create_token_auth(settings.jwt_secret_key)
@@ -67,6 +70,7 @@ def create_app(
     # Plain FastAPI routes
     app.include_router(auth_router)
     app.include_router(settings_router)
+    app.include_router(todoist_auth_router)
 
     # Test-only routes — completely absent in production
     if settings.testing:
@@ -75,6 +79,7 @@ def create_app(
     # FastREST viewset routes
     rest_router = DefaultRouter()
     rest_router.register("external-accounts", ExternalAccountViewSet, basename="external-account")
+    rest_router.register("tasks", TaskViewSet, basename="task")
     app.include_router(rest_router.urls, prefix="/api")
 
     @app.get("/api/health")

@@ -8,7 +8,7 @@ from playwright.sync_api import Page
 def test_frontend_loads(frontend_server: str, page: Page) -> None:
     """Vue app loads and shows the login page for unauthenticated users."""
     page.goto(frontend_server)
-    page.wait_for_load_state("networkidle")
+    page.wait_for_load_state("domcontentloaded")
     assert page.title() != ""
 
 
@@ -24,5 +24,6 @@ def test_api_health(backend_server: str, page: Page) -> None:
 def test_authenticated_settings_page(frontend_server: str, authenticated_page: Page) -> None:
     """Authenticated user can reach the settings page."""
     authenticated_page.goto(f"{frontend_server}/settings")
-    authenticated_page.wait_for_load_state("networkidle")
-    assert authenticated_page.locator("h1").text_content() == "Settings"
+    heading = authenticated_page.locator("h1")
+    heading.wait_for(state="visible")
+    assert heading.text_content() == "Settings"

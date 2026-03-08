@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from fastrest.fields import BooleanField, CharField, DateTimeField, UUIDField
 from fastrest.serializers import ModelSerializer
 
@@ -23,7 +25,7 @@ class ExternalAccountSerializer(ModelSerializer):
 
     class Meta:
         model = ExternalAccount
-        fields = [
+        fields: ClassVar[list[str]] = [
             "id",
             "external_email",
             "provider",
@@ -35,4 +37,4 @@ class ExternalAccountSerializer(ModelSerializer):
             "needs_reauth",
             "last_sync",
         ]
-        read_only_fields = ["id", "user_id"]
+        read_only_fields: ClassVar[list[str]] = ["id", "user_id"]

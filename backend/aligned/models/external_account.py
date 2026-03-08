@@ -141,3 +141,46 @@ class ExternalAccount(Base):
         )
         result = await session.execute(stmt)
         return list(result.scalars().all())
+
+    @classmethod
+    async def get_task_account(
+        cls,
+        session: AsyncSession,
+        user_id: uuid.UUID,
+        provider_name: str,
+        task_user_email: str,
+    ) -> ExternalAccount | None:
+        """Get a specific task account by provider name and email."""
+        from sqlalchemy import select
+
+        # Map task provider name to DB provider name
+        db_provider = TASK_PROVIDER_MAP.get(provider_name, provider_name)
+        result = await session.execute(
+            select(cls).where(
+                cls.user_id == user_id,
+                cls.provider == db_provider,
+                cls.external_email == task_user_email,
+                cls.use_for_tasks.is_(True),
+            )
+        )
+        return result.scalar_one_or_none()
+
+    @classmethod
+    async def get_by_email_provider_and_user(
+        cls,
+        session: AsyncSession,
+        external_email: str,
+        provider: str,
+        user_id: uuid.UUID,
+    ) -> ExternalAccount | None:
+        """Get an account by email, provider, and user."""
+        from sqlalchemy import select
+
+        result = await session.execute(
+            select(cls).where(
+                cls.user_id == user_id,
+                cls.provider == provider,
+                cls.external_email == external_email,
+            )
+        )
+        return result.scalar_one_or_none()

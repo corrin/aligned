@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from fastrest.viewsets import ReadOnlyModelViewSet
 
 from aligned.models.external_account import ExternalAccount
@@ -16,9 +14,11 @@ class ExternalAccountViewSet(SessionMixin, ReadOnlyModelViewSet):
     serializer_class = ExternalAccountSerializer
     lookup_field_type = str
 
-    async def get_queryset(self) -> Any:
+    async def get_queryset(self) -> list[ExternalAccount]:
         """Filter to only the current user's accounts."""
         from sqlalchemy import select
 
         user = self.request.user
-        return select(ExternalAccount).where(ExternalAccount.user_id == user.id)
+        stmt = select(ExternalAccount).where(ExternalAccount.user_id == user.id)
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
