@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Request
 
 from aligned.auth.dependencies import get_current_user_from_request, get_db_session
 from aligned.models.external_account import ExternalAccount
@@ -26,19 +25,13 @@ async def add_account(request: Request) -> dict[str, str]:
     api_key = body.get("api_key")
 
     if not email or not api_key:
-        return JSONResponse(
-            {"detail": "Both todoist_email and api_key are required."},
-            status_code=400,
-        )  # type: ignore[return-value]
+        raise HTTPException(status_code=400, detail="Both todoist_email and api_key are required.")
 
     existing = await ExternalAccount.get_task_account(
         session, user_id=user.id, provider_name="todoist", task_user_email=email
     )
     if existing:
-        return JSONResponse(
-            {"detail": f"A Todoist account for {email} already exists."},
-            status_code=409,
-        )  # type: ignore[return-value]
+        raise HTTPException(status_code=409, detail=f"A Todoist account for {email} already exists.")
 
     account = ExternalAccount(
         user_id=user.id,
@@ -65,16 +58,13 @@ async def update_key(request: Request) -> dict[str, str]:
     api_key = body.get("api_key")
 
     if not email:
-        return JSONResponse({"detail": "todoist_email is required."}, status_code=400)  # type: ignore[return-value]
+        raise HTTPException(status_code=400, detail="todoist_email is required.")
 
     account = await ExternalAccount.get_task_account(
         session, user_id=user.id, provider_name="todoist", task_user_email=email
     )
     if not account:
-        return JSONResponse(
-            {"detail": f"Todoist account for {email} not found."},
-            status_code=404,
-        )  # type: ignore[return-value]
+        raise HTTPException(status_code=404, detail=f"Todoist account for {email} not found.")
 
     account.api_key = api_key
     account.needs_reauth = False
@@ -93,16 +83,13 @@ async def delete_account(request: Request) -> dict[str, str]:
 
     email = body.get("todoist_email")
     if not email:
-        return JSONResponse({"detail": "todoist_email is required."}, status_code=400)  # type: ignore[return-value]
+        raise HTTPException(status_code=400, detail="todoist_email is required.")
 
     account = await ExternalAccount.get_task_account(
         session, user_id=user.id, provider_name="todoist", task_user_email=email
     )
     if not account:
-        return JSONResponse(
-            {"detail": f"Todoist account for {email} not found."},
-            status_code=404,
-        )  # type: ignore[return-value]
+        raise HTTPException(status_code=404, detail=f"Todoist account for {email} not found.")
 
     await session.delete(account)
     await session.flush()

@@ -90,9 +90,9 @@ class TaskViewSet(SessionMixin, ModelViewSet):
         result = await session.execute(select(Task).where(Task.id == data["task_id"], Task.user_id == user.id))
         task = result.scalar_one_or_none()
         if task is None:
-            from fastapi.responses import JSONResponse
+            from fastapi import HTTPException
 
-            return JSONResponse({"detail": "Task not found."}, status_code=404)  # type: ignore[return-value]
+            raise HTTPException(status_code=404, detail="Task not found.")
 
         destination = data["destination"]
         task.list_type = destination
@@ -144,9 +144,9 @@ class TaskViewSet(SessionMixin, ModelViewSet):
         result = await session.execute(select(Task).where(Task.id == uuid.UUID(pk), Task.user_id == user.id))
         task = result.scalar_one_or_none()
         if task is None:
-            from fastapi.responses import JSONResponse
+            from fastapi import HTTPException
 
-            return JSONResponse({"detail": "Task not found."}, status_code=404)  # type: ignore[return-value]
+            raise HTTPException(status_code=404, detail="Task not found.")
 
         new_status = request.data.get("status")
         if new_status:

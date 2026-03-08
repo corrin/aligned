@@ -64,7 +64,7 @@ async def _refresh_account_token(session: AsyncSession, account: ExternalAccount
         from google.auth.transport.requests import Request
         from google.oauth2.credentials import Credentials
 
-        creds = Credentials(  # type: ignore[no-untyped-call]
+        creds = Credentials(
             token=account.token,
             refresh_token=account.refresh_token,
             token_uri="https://oauth2.googleapis.com/token",

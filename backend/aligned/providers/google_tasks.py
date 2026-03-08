@@ -44,7 +44,7 @@ class GoogleTaskProvider(TaskProvider):
             logger.warning("No valid Google account for user_id=%s", user_id)
             return None
 
-        creds = Credentials(  # type: ignore[no-untyped-call]
+        creds = Credentials(
             token=account.token,
             refresh_token=account.refresh_token,
             token_uri="https://oauth2.googleapis.com/token",
