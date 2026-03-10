@@ -14,6 +14,7 @@ from aligned.routes.auth import router as auth_router
 from aligned.routes.auth import test_router as auth_test_router
 from aligned.routes.settings import router as settings_router
 from aligned.routes.todoist_auth import router as todoist_auth_router
+from aligned.viewsets.chat import ConversationViewSet
 from aligned.viewsets.external_accounts import ExternalAccountViewSet
 from aligned.viewsets.tasks import TaskViewSet
 
@@ -78,6 +79,7 @@ def create_app(
 
     # FastREST viewset routes
     rest_router = DefaultRouter()
+    rest_router.register("conversations", ConversationViewSet, basename="conversation")
     rest_router.register("external-accounts", ExternalAccountViewSet, basename="external-account")
     rest_router.register("tasks", TaskViewSet, basename="task")
     app.include_router(rest_router.urls, prefix="/api")
