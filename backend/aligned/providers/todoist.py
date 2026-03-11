@@ -6,9 +6,11 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from sqlalchemy import select
 from todoist_api_python.api import TodoistAPI
 
 from aligned.models.external_account import ExternalAccount
+from aligned.models.task import Task
 from aligned.providers.task_provider import ProviderTask, TaskProvider
 
 if TYPE_CHECKING:
@@ -128,10 +130,6 @@ class TodoistProvider(TaskProvider):
         if not task_data:
             return True
 
-        from sqlalchemy import select
-
-        from aligned.models.task import Task
-
         result = await session.execute(select(Task).where(Task.id == task_id, Task.user_id == user_id))
         task = result.scalar_one_or_none()
         if not task:
@@ -166,10 +164,6 @@ class TodoistProvider(TaskProvider):
 
     async def update_task_status(self, session: AsyncSession, user_id: UUID, task_id: str, status: str) -> bool:
         """Update task completion status in Todoist."""
-        from sqlalchemy import select
-
-        from aligned.models.task import Task
-
         result = await session.execute(select(Task).where(Task.id == task_id, Task.user_id == user_id))
         task = result.scalar_one_or_none()
         if not task:

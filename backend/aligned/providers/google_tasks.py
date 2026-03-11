@@ -7,6 +7,8 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 
 from aligned.models.external_account import ExternalAccount
@@ -31,9 +33,6 @@ class GoogleTaskProvider(TaskProvider):
 
     async def _get_client(self, session: AsyncSession, user_id: UUID, task_user_email: str) -> TasksResource | None:
         """Initialize and return a Google Tasks API client."""
-        from google.auth.transport.requests import Request
-        from google.oauth2.credentials import Credentials
-
         account = await ExternalAccount.get_by_email_provider_and_user(
             session,
             external_email=task_user_email,

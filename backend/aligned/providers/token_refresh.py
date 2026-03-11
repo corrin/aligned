@@ -7,6 +7,8 @@ import logging
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from sqlalchemy import select
 
 from aligned.models.external_account import ExternalAccount
@@ -64,9 +66,6 @@ async def _refresh_account_token(session: AsyncSession, account: ExternalAccount
         raise ValueError(f"Unsupported provider for token refresh: {account.provider}")
 
     if account.provider == "google":
-        from google.auth.transport.requests import Request
-        from google.oauth2.credentials import Credentials
-
         creds = Credentials(
             token=account.token,
             refresh_token=account.refresh_token,

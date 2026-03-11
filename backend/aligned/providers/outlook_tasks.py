@@ -6,7 +6,10 @@ import logging
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from msgraph.graph_service_client import GraphServiceClient as _GraphServiceClient
+
 from aligned.models.external_account import ExternalAccount
+from aligned.providers.o365_credentials import AccessTokenCredential
 from aligned.providers.task_provider import ProviderTask, TaskProvider
 
 if TYPE_CHECKING:
@@ -30,8 +33,6 @@ class OutlookTaskProvider(TaskProvider):
         self, session: AsyncSession, user_id: UUID, task_user_email: str
     ) -> GraphServiceClient | None:
         """Initialize and return a Microsoft Graph client."""
-        from msgraph.graph_service_client import GraphServiceClient as _GraphServiceClient
-
         account = await ExternalAccount.get_by_email_provider_and_user(
             session,
             external_email=task_user_email,
@@ -41,8 +42,6 @@ class OutlookTaskProvider(TaskProvider):
         if not account or not account.token or account.needs_reauth:
             logger.warning("No valid Outlook account for user_id=%s", user_id)
             return None
-
-        from aligned.providers.o365_credentials import AccessTokenCredential
 
         credential = AccessTokenCredential(account.token)
         return _GraphServiceClient(credential)

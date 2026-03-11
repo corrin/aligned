@@ -5,6 +5,7 @@ from __future__ import annotations
 import uuid
 from typing import TYPE_CHECKING
 
+from fastapi import HTTPException
 from fastrest.decorators import action
 from fastrest.viewsets import ModelViewSet
 
@@ -90,8 +91,6 @@ class TaskViewSet(SessionMixin, ModelViewSet):
         result = await session.execute(select(Task).where(Task.id == data["task_id"], Task.user_id == user.id))
         task = result.scalar_one_or_none()
         if task is None:
-            from fastapi import HTTPException
-
             raise HTTPException(status_code=404, detail="Task not found.")
 
         destination = data["destination"]
@@ -145,8 +144,6 @@ class TaskViewSet(SessionMixin, ModelViewSet):
         result = await session.execute(select(Task).where(Task.id == uuid.UUID(pk), Task.user_id == user.id))
         task = result.scalar_one_or_none()
         if task is None:
-            from fastapi import HTTPException
-
             raise HTTPException(status_code=404, detail="Task not found.")
 
         new_status = request.data.get("status")
