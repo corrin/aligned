@@ -6,13 +6,17 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      redirect: '/chat',
     },
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue'),
+    },
+    {
+      path: '/auth/callback',
+      name: 'auth-callback',
+      component: () => import('../views/AuthCallbackView.vue'),
     },
     {
       path: '/tasks',
@@ -34,11 +38,11 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const authStore = useAuthStore()
-  if (to.name !== 'login' && !authStore.isAuthenticated()) {
+  if (to.name !== 'login' && to.name !== 'auth-callback' && !authStore.isAuthenticated()) {
     return { name: 'login' }
   }
   if (to.name === 'login' && authStore.isAuthenticated()) {
-    return { name: 'home' }
+    return { path: '/chat' }
   }
 })
 

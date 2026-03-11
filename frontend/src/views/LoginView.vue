@@ -1,16 +1,5 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
-
-const router = useRouter()
-const authStore = useAuthStore()
-
-function handleCredentialResponse(response: { credential: string }) {
-  authStore.login(response.credential).then(() => {
-    router.push('/')
-  })
-}
 
 onMounted(() => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -26,7 +15,8 @@ onMounted(() => {
   script.onload = () => {
     window.google.accounts.id.initialize({
       client_id: clientId,
-      callback: handleCredentialResponse,
+      ux_mode: 'redirect',
+      login_uri: window.location.origin + '/api/auth/google/callback',
     })
     window.google.accounts.id.renderButton(document.getElementById('g_id_signin')!, {
       theme: 'outline',
