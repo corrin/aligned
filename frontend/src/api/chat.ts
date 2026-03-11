@@ -38,26 +38,26 @@ export interface SSEEvent {
 }
 
 export async function fetchConversations(): Promise<Conversation[]> {
-  const response = await api.get('/chat/conversations/')
+  const response = await api.get('/conversations')
   return response.data
 }
 
 export async function createConversation(title?: string): Promise<Conversation> {
-  const response = await api.post('/chat/conversations/', { title })
+  const response = await api.post('/conversations', { title })
   return response.data
 }
 
 export async function deleteConversation(id: string): Promise<void> {
-  await api.delete(`/chat/conversations/${id}/`)
+  await api.delete(`/conversations/${id}`)
 }
 
 export async function fetchMessages(conversationId: string): Promise<ChatMessage[]> {
-  const response = await api.get(`/chat/conversations/${conversationId}/messages/`)
+  const response = await api.get(`/conversations/${conversationId}/messages`)
   return response.data
 }
 
 export async function fetchDashboard(): Promise<DashboardData> {
-  const response = await api.get('/chat/dashboard/')
+  const response = await api.get('/dashboard')
   return response.data
 }
 
@@ -67,7 +67,7 @@ export async function sendMessage(
   onEvent?: (event: SSEEvent) => void,
 ): Promise<void> {
   const token = localStorage.getItem('token')
-  const response = await fetch('/api/chat/send/', {
+  const response = await fetch('/api/chat', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
