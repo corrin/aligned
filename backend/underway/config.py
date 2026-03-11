@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     debug: bool = False
     testing: bool = False
 
+    google_scopes: str = "https://www.googleapis.com/auth/calendar"
+    o365_scopes: str = "https://graph.microsoft.com/Calendars.ReadWrite"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

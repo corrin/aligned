@@ -11,7 +11,7 @@ const authStore = useAuthStore()
       <nav>
         <div class="nav-left">
           <RouterLink to="/" class="brand">Underway</RouterLink>
-          <RouterLink to="/">Home</RouterLink>
+          <RouterLink to="/chat">Chat</RouterLink>
           <RouterLink to="/tasks">Tasks</RouterLink>
         </div>
         <div class="nav-right">

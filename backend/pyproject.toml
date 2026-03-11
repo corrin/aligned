@@ -25,6 +25,8 @@ google-api-python-client = "*"
 google-auth-oauthlib = "*"
 alembic = "*"
 msgraph-sdk = "^1.55.0"
+python-multipart = "^0.0.22"
+aiosqlite = "^0.22.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import urllib.parse
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -86,6 +88,49 @@ async def google_login(
             "schedule_slot_duration": user.schedule_slot_duration,
         },
     }
+
+
+@router.post("/google/callback")
+async def google_login_redirect(
+    credential: str = Form(...),
+    session: DbSession = None,  # type: ignore[assignment]
+    settings: AppSettings = None,  # type: ignore[assignment]
+) -> RedirectResponse:
+    """Handle Google Identity Services redirect-mode form POST.
+
+    Google posts the credential here; we verify it, create/find the user,
+    mint a JWT, and redirect to the frontend with the token in the URL fragment.
+    """
+    try:
+        email = await asyncio.to_thread(verify_google_id_token, credential, settings.google_client_id)
+    except ValueError:
+        logger.exception("Google ID token verification failed (redirect)")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google ID token",
+        ) from None
+
+    result = await session.execute(select(User).where(User.app_login == email))
+    user = result.scalar_one_or_none()
+
+    if user is None:
+        user = User(app_login=email)
+        user.id = uuid.uuid4()
+        session.add(user)
+        await session.flush()
+
+    token = create_access_token(user.id, user.app_login, settings.jwt_secret_key)
+
+    # Redirect to frontend callback with token as query params.
+    # Use a relative path — the browser is already on the correct host (ngrok/localhost).
+    params = urllib.parse.urlencode(
+        {
+            "token": token,
+            "user_email": email,
+            "user_id": str(user.id),
+        }
+    )
+    return RedirectResponse(url=f"/auth/callback?{params}", status_code=303)
 
 
 @router.get("/me", response_model=UserResponse)
