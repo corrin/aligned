@@ -5,20 +5,16 @@ from __future__ import annotations
 import logging
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING
+from uuid import UUID
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from googleapiclient._apis.tasks.v1 import TasksResource
 from googleapiclient.discovery import build
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.models.external_account import ExternalAccount
 from aligned.providers.task_provider import ProviderTask, TaskProvider
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from googleapiclient._apis.tasks.v1 import TasksResource
-    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

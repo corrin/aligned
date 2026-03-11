@@ -4,19 +4,15 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING
+from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from todoist_api_python.api import TodoistAPI
 
 from aligned.models.external_account import ExternalAccount
 from aligned.models.task import Task
 from aligned.providers.task_provider import ProviderTask, TaskProvider
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 

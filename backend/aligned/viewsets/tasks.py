@@ -3,14 +3,11 @@
 from __future__ import annotations
 
 import uuid
-from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
 from fastrest.decorators import action
+from fastrest.request import Request
 from fastrest.viewsets import ModelViewSet
-
-if TYPE_CHECKING:
-    from fastrest.request import Request
 from sqlalchemy import select, update
 
 from aligned.models.task import Task

@@ -4,19 +4,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import TYPE_CHECKING
+from uuid import UUID
 
-from msgraph.graph_service_client import GraphServiceClient as _GraphServiceClient
+from msgraph.graph_service_client import GraphServiceClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.models.external_account import ExternalAccount
 from aligned.providers.o365_credentials import AccessTokenCredential
 from aligned.providers.task_provider import ProviderTask, TaskProvider
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from msgraph.graph_service_client import GraphServiceClient
-    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +39,7 @@ class OutlookTaskProvider(TaskProvider):
             return None
 
         credential = AccessTokenCredential(account.token)
-        return _GraphServiceClient(credential)
+        return GraphServiceClient(credential)
 
     async def authenticate(self, session: AsyncSession, user_id: UUID, task_user_email: str) -> tuple[str, str] | None:
         """Check O365 credentials."""

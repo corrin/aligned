@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.auth.jwt import JWTUser, verify_access_token
-
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
 from aligned.config import Settings, get_settings
 
 logger = logging.getLogger(__name__)

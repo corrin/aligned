@@ -3,18 +3,14 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from uuid import UUID
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.providers.google_tasks import GoogleTaskProvider
 from aligned.providers.outlook_tasks import OutlookTaskProvider
+from aligned.providers.task_provider import ProviderTask, TaskProvider
 from aligned.providers.todoist import TodoistProvider
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    from aligned.providers.task_provider import ProviderTask, TaskProvider
 
 logger = logging.getLogger(__name__)
 

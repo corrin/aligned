@@ -7,14 +7,13 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String, Text, and_, or_, select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from aligned.models.base import Base
 from aligned.models.types import MySQLUUID
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
-
     from aligned.models.user import User
 
 TASK_PROVIDER_MAP: dict[str, str] = {

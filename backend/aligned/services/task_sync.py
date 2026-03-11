@@ -6,18 +6,13 @@ import hashlib
 import json
 import logging
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from uuid import UUID
 
 from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from aligned.models.task import Task
-
-if TYPE_CHECKING:
-    from uuid import UUID
-
-    from sqlalchemy.ext.asyncio import AsyncSession
-
-    from aligned.providers.task_provider import ProviderTask
+from aligned.providers.task_provider import ProviderTask
 
 logger = logging.getLogger(__name__)
 
