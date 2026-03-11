@@ -32,7 +32,7 @@ export interface SSEEvent {
   type: 'token' | 'tool_call' | 'dashboard_refresh' | 'done' | 'error'
   content?: string
   name?: string
-  result?: string
+  result?: unknown
   conversation_id?: string
   message?: string
 }

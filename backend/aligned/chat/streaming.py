@@ -28,6 +28,8 @@ router = APIRouter(prefix="/api", tags=["chat"])
 DbSession = Annotated[AsyncSession, Depends(get_db_session)]
 CurrentUser = Annotated[JWTUser, Depends(get_current_user)]
 
+MAX_TOOL_ROUNDS = 10
+
 SYSTEM_PROMPT = (
     "You are Aligned, a task management assistant. You help users:\n"
     "- Break down complex tasks into smaller, actionable subtasks\n"
@@ -42,7 +44,7 @@ SYSTEM_PROMPT = (
 
 class ChatRequest(BaseModel):
     message: str
-    conversation_id: str | None = None
+    conversation_id: uuid.UUID | None = None
 
 
 def _build_messages(
@@ -69,7 +71,7 @@ async def _prepare_and_stream(
     session_factory: async_sessionmaker[AsyncSession],
     user_id: uuid.UUID,
     message: str,
-    conversation_id: str | None,
+    conversation_id: uuid.UUID | None,
 ) -> AsyncGenerator[str, None]:
     """Set up conversation and stream LLM response.
 
@@ -94,9 +96,8 @@ async def _prepare_and_stream(
 
             # Get or create conversation
             if conversation_id:
-                parsed_id = uuid.UUID(conversation_id)
                 conv_result = await session.execute(
-                    select(Conversation).where(Conversation.id == parsed_id, Conversation.user_id == user_id)
+                    select(Conversation).where(Conversation.id == conversation_id, Conversation.user_id == user_id)
                 )
                 conversation = conv_result.scalar_one_or_none()
                 if conversation is None:
@@ -138,8 +139,9 @@ async def _prepare_and_stream(
             history_dicts.append({"role": "user", "content": message})
             messages = _build_messages(SYSTEM_PROMPT, ai_instructions, history_dicts)
 
-            # Streaming LLM loop
+            # Streaming LLM loop with bounded iterations
             seq = next_seq
+            tool_rounds = 0
             while True:
                 response = litellm.acompletion(
                     model=llm_model,
@@ -178,6 +180,12 @@ async def _prepare_and_stream(
                                     entry["function"]["arguments"] += tc.function.arguments
 
                 if tool_calls_by_index:
+                    tool_rounds += 1
+                    if tool_rounds > MAX_TOOL_ROUNDS:
+                        yield _sse_event({"type": "error", "message": "Too many tool calls"})
+                        await session.commit()
+                        return
+
                     tool_calls_list = [tool_calls_by_index[i] for i in sorted(tool_calls_by_index)]
 
                     assistant_content = "".join(content_parts) or None
@@ -241,6 +249,8 @@ async def _prepare_and_stream(
                             }
                         )
 
+                    # Commit after tool execution so mutations survive client disconnects
+                    await session.commit()
                     continue
 
                 # No tool calls — save assistant message and finish
@@ -299,6 +309,7 @@ async def chat(
             conversation_id=body.conversation_id,
         ),
         media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
 
 

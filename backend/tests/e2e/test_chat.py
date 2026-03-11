@@ -17,7 +17,7 @@ def test_chat_page_loads(frontend_server: str, authenticated_page: Page) -> None
 def test_chat_has_new_chat_button(frontend_server: str, authenticated_page: Page) -> None:
     """New Chat button is visible on the chat page."""
     authenticated_page.goto(f"{frontend_server}/chat")
-    new_btn = authenticated_page.locator(".new-chat-btn")
+    new_btn = authenticated_page.locator(".btn-new-chat")
     new_btn.wait_for(state="visible")
     assert new_btn.is_visible()
 
@@ -26,6 +26,6 @@ def test_chat_has_new_chat_button(frontend_server: str, authenticated_page: Page
 def test_chat_has_dashboard_sidebar(frontend_server: str, authenticated_page: Page) -> None:
     """Dashboard sidebar is visible on the chat page."""
     authenticated_page.goto(f"{frontend_server}/chat")
-    sidebar = authenticated_page.locator(".dashboard-sidebar")
+    sidebar = authenticated_page.locator(".chat-sidebar--right")
     sidebar.wait_for(state="visible")
     assert sidebar.is_visible()
