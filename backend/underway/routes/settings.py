@@ -67,7 +67,7 @@ async def update_settings(
 
     if body.schedule_slot_duration is not None and body.schedule_slot_duration not in VALID_SLOT_DURATIONS:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"schedule_slot_duration must be one of {sorted(VALID_SLOT_DURATIONS)}",
         )
 

@@ -51,7 +51,7 @@ class TestVerifyAccessToken:
     def test_wrong_secret_raises(self) -> None:
         token = create_access_token(USER_ID, EMAIL, SECRET)
         with pytest.raises(jwt.InvalidSignatureError):
-            verify_access_token(token, "wrong-secret")
+            verify_access_token(token, "wrong-secret-that-is-at-least-32-chars!")
 
     def test_expired_token_raises(self) -> None:
         with patch("underway.auth.jwt.datetime") as mock_dt:
@@ -82,6 +82,6 @@ class TestCreateTokenAuth:
 
     def test_token_with_wrong_secret_returns_none(self) -> None:
         auth = create_token_auth(SECRET)
-        token = create_access_token(USER_ID, EMAIL, "different-secret")
+        token = create_access_token(USER_ID, EMAIL, "different-secret-at-least-32-chars!")
         user = auth.get_user_by_token(token)
         assert user is None
