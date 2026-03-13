@@ -2,6 +2,13 @@
 
 from pydantic_settings import BaseSettings
 
+REQUIRED_SETTINGS = [
+    "database_url",
+    "jwt_secret_key",
+    "google_client_id",
+    "google_client_secret",
+]
+
 
 class Settings(BaseSettings):
     """Application configuration. Values loaded from .env file or environment."""
@@ -22,6 +29,13 @@ class Settings(BaseSettings):
     o365_scopes: str = "https://graph.microsoft.com/Calendars.ReadWrite"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+
+    def validate_required(self) -> None:
+        """Raise if any required settings are missing."""
+        missing = [name for name in REQUIRED_SETTINGS if not getattr(self, name)]
+        if missing:
+            msg = f"Missing required settings: {', '.join(missing)}"
+            raise RuntimeError(msg)
 
 
 def get_settings() -> Settings:

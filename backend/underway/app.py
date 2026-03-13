@@ -43,6 +43,9 @@ def create_app(
     if settings is None:
         settings = get_settings()
 
+    if not settings.testing:
+        settings.validate_required()
+
     app = FastAPI(
         title="Underway",
         description="Intelligent task and calendar management",
