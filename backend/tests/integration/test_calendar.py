@@ -206,21 +206,6 @@ class TestSetPrimary:
 
 
 class TestOAuthInitiate:
-    async def test_google_initiate_no_config_returns_400(self, client: AsyncClient, db_session: AsyncSession) -> None:
-        user = await _create_user(db_session)
-        await db_session.commit()
-
-        resp = await client.post("/api/oauth/google/initiate", headers=_auth_headers(user))
-        # google_client_id is empty in test settings, so should fail
-        assert resp.status_code == 400
-
-    async def test_o365_initiate_no_config_returns_400(self, client: AsyncClient, db_session: AsyncSession) -> None:
-        user = await _create_user(db_session)
-        await db_session.commit()
-
-        resp = await client.post("/api/oauth/o365/initiate", headers=_auth_headers(user))
-        assert resp.status_code == 400
-
     async def test_google_callback_missing_params_returns_400(self, client: AsyncClient) -> None:
         resp = await client.get("/api/oauth/google/callback")
         assert resp.status_code == 400

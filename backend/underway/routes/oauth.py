@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import logging
+import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
 
 from underway.auth.dependencies import get_current_user_from_request, get_db_session
-from underway.config import get_settings
+from underway.config import Settings, get_settings
 from underway.providers.calendar.google import build_google_oauth_url, handle_google_oauth_callback
 from underway.providers.calendar.o365 import build_o365_oauth_url, handle_o365_oauth_callback
 
@@ -16,19 +18,17 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/oauth", tags=["oauth"])
 
+AppSettings = Annotated[Settings, Depends(get_settings)]
+
 # In-memory state store for OAuth flows. Maps state -> user_id.
 # In production, use Redis or DB-backed store.
 _oauth_states: dict[str, str] = {}
 
 
 @router.post("/google/initiate")
-async def initiate_google_oauth(request: Request) -> dict[str, str]:
+async def initiate_google_oauth(request: Request, settings: AppSettings) -> dict[str, str]:
     """Return the Google OAuth URL for the frontend to redirect to."""
     user = await get_current_user_from_request(request)
-    settings = get_settings()
-
-    if not settings.google_client_id:
-        raise HTTPException(status_code=400, detail="Google OAuth is not configured.")
 
     url, state = build_google_oauth_url(settings)
     _oauth_states[state] = str(user.id)
@@ -37,7 +37,7 @@ async def initiate_google_oauth(request: Request) -> dict[str, str]:
 
 
 @router.get("/google/callback")
-async def google_oauth_callback(request: Request) -> RedirectResponse:
+async def google_oauth_callback(request: Request, settings: AppSettings) -> RedirectResponse:
     """Handle the Google OAuth callback redirect."""
     code = request.query_params.get("code")
     state = request.query_params.get("state")
@@ -49,9 +49,6 @@ async def google_oauth_callback(request: Request) -> RedirectResponse:
     if not user_id_str:
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
 
-    import uuid
-
-    settings = get_settings()
     session = get_db_session(request)
 
     try:
@@ -71,13 +68,9 @@ async def google_oauth_callback(request: Request) -> RedirectResponse:
 
 
 @router.post("/o365/initiate")
-async def initiate_o365_oauth(request: Request) -> dict[str, str]:
+async def initiate_o365_oauth(request: Request, settings: AppSettings) -> dict[str, str]:
     """Return the O365 OAuth URL for the frontend to redirect to."""
     user = await get_current_user_from_request(request)
-    settings = get_settings()
-
-    if not settings.o365_client_id:
-        raise HTTPException(status_code=400, detail="O365 OAuth is not configured.")
 
     url, state = build_o365_oauth_url(settings)
     _oauth_states[state] = str(user.id)
@@ -86,7 +79,7 @@ async def initiate_o365_oauth(request: Request) -> dict[str, str]:
 
 
 @router.get("/o365/callback")
-async def o365_oauth_callback(request: Request) -> RedirectResponse:
+async def o365_oauth_callback(request: Request, settings: AppSettings) -> RedirectResponse:
     """Handle the O365 OAuth callback redirect."""
     code = request.query_params.get("code")
     state = request.query_params.get("state")
@@ -98,9 +91,6 @@ async def o365_oauth_callback(request: Request) -> RedirectResponse:
     if not user_id_str:
         raise HTTPException(status_code=400, detail="Invalid or expired OAuth state.")
 
-    import uuid
-
-    settings = get_settings()
     session = get_db_session(request)
 
     try:
