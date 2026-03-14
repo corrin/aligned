@@ -93,7 +93,7 @@ async def delete_event(request: Request) -> dict[str, object]:
 
 @router.delete("/disconnect-account")
 async def disconnect_account(request: Request) -> dict[str, str]:
-    """DELETE /api/calendar/disconnect-account?account_id=... — disconnect a calendar account."""
+    """DELETE /api/calendar/disconnect-account?account_id=... — disconnect an external account."""
     user = await get_current_user_from_request(request)
     session = get_db_session(request)
 
@@ -114,16 +114,16 @@ async def disconnect_account(request: Request) -> dict[str, str]:
         select(ExternalAccount).where(
             ExternalAccount.id == parsed_id,
             ExternalAccount.user_id == user.id,
-            ExternalAccount.use_for_calendar.is_(True),
         )
     )
     account = result.scalar_one_or_none()
     if not account:
-        raise HTTPException(status_code=404, detail="Calendar account not found.")
+        raise HTTPException(status_code=404, detail="Account not found.")
 
-    await account.disconnect("calendar", session)
+    await session.delete(account)
+    await session.commit()
 
-    return {"status": "ok", "message": f"{account.external_email} disconnected from calendar."}
+    return {"status": "ok", "message": f"{account.external_email} disconnected."}
 
 
 @router.patch("/account-flags")
